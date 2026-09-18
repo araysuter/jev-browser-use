@@ -1,0 +1,20 @@
+{
+  "name": "jev-browser-use",
+  "interface": {
+    "displayName": "Jev Browser Use"
+  },
+  "plugins": [
+    {
+      "name": "jev-browser-use",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
