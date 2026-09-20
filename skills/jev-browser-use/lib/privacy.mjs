@@ -1,3 +1,4 @@
+import { platform, userInfo } from 'node:os';
 import { open } from 'node:fs/promises';
 import { constants } from 'node:fs';
 import { isAbsolute } from 'node:path';
@@ -13,7 +14,7 @@ export async function readCredential(envFile, keyName) {
   try {
     file = await open(envFile, constants.O_RDONLY | constants.O_NOFOLLOW);
     const info = await file.stat();
-    if (!info.isFile() || (process.platform !== 'win32' && ((info.mode & 0o077) || info.uid !== process.getuid()))) {
+    if (!info.isFile() || (platform() !== 'win32' && ((info.mode & 0o077) || info.uid !== userInfo().uid))) {
       throw new HandoffError('credential_permissions');
     }
     const env = parseEnv(await file.readFile('utf8'));

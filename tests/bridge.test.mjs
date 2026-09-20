@@ -4,7 +4,7 @@ import { mkdtemp, writeFile, chmod, readFile, readdir, rm, mkdir } from 'node:fs
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { run, decide, createSession, availableActions, discoverActions, reviewForm, approveSubmission, fillTextBatch } from '../skills/jev-browser-use/bridge.mjs';
-import { sanitizePayload } from '../skills/jev-browser-use/lib/privacy.mjs';
+import { readCredential, sanitizePayload } from '../skills/jev-browser-use/lib/privacy.mjs';
 import { selectContext } from '../skills/jev-browser-use/lib/state.mjs';
 import { writeMetrics } from '../skills/jev-browser-use/lib/telemetry.mjs';
 
@@ -233,4 +233,15 @@ test('transport retry is bounded and decision schema is validated', async () => 
   mockDecisions(['DONE']); const real = globalThis.fetch;
   globalThis.fetch = async (...args) => { const r = await real(...args); const body = await r.json(); body.answers.next.probabilities.DONE = 0.2; return { ok: true, json: async () => body }; };
   assert.equal((await run(tab(page('1 button Settings')), opts())).handoff, 'schema');
+});
+
+test('credential checks and telemetry work without a global process binding', async () => {
+  const original = globalThis.process;
+  try {
+    globalThis.process = undefined;
+    assert.equal(await readCredential(envFile, 'OPENROUTER_API_KEY'), 'unit-openrouter-not-real');
+    assert.equal(await writeMetrics({status:'needs_verification',provider:'openrouter'}, {directory:join(directory, 'logs')}), true);
+    await chmod(envFile, 0o644);
+    await assert.rejects(readCredential(envFile, 'OPENROUTER_API_KEY'), /credential_permissions/);
+  } finally { globalThis.process = original; }
 });

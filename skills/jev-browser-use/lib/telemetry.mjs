@@ -1,3 +1,4 @@
+import { platform, userInfo } from 'node:os';
 import { mkdir, open, readdir, unlink, lstat, chmod } from 'node:fs/promises';
 import { constants } from 'node:fs';
 import { homedir } from 'node:os';
@@ -12,7 +13,7 @@ export async function writeMetrics(outcome, { directory = defaultLogDirectory(),
   try {
     await mkdir(directory, { recursive: true, mode: 0o700 });
     const directoryInfo = await lstat(directory);
-    if (directoryInfo.isSymbolicLink() || !directoryInfo.isDirectory() || (process.platform !== 'win32' && directoryInfo.uid !== process.getuid())) return false;
+    if (directoryInfo.isSymbolicLink() || !directoryInfo.isDirectory() || (platform() !== 'win32' && directoryInfo.uid !== userInfo().uid)) return false;
     await chmod(directory, 0o700);
     const day = now.toISOString().slice(0, 10);
     const cutoff = now.getTime() - 30 * 86400000;
@@ -30,7 +31,7 @@ export async function writeMetrics(outcome, { directory = defaultLogDirectory(),
     const file = await open(join(directory, `${day}.jsonl`), constants.O_WRONLY | constants.O_APPEND | constants.O_CREAT | constants.O_NOFOLLOW, 0o600);
     try {
       const info = await file.stat();
-      if (!info.isFile() || (process.platform !== 'win32' && info.uid !== process.getuid())) return false;
+      if (!info.isFile() || (platform() !== 'win32' && info.uid !== userInfo().uid)) return false;
       await file.chmod(0o600);
       await file.writeFile(JSON.stringify(record) + '\n');
     } finally { await file.close(); }
