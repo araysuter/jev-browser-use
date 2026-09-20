@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, writeFile, chmod, readFile, readdir, rm, mkdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { run, decide, createSession, availableActions, discoverActions, reviewForm, approveSubmission, fillTextBatch } from '../skills/jev-browser-use/bridge.mjs';
+import { doctor, run, decide, createSession, availableActions, discoverActions, reviewForm, approveSubmission, fillTextBatch } from '../skills/jev-browser-use/bridge.mjs';
 import { readCredential, sanitizePayload } from '../skills/jev-browser-use/lib/privacy.mjs';
 import { selectContext } from '../skills/jev-browser-use/lib/state.mjs';
 import { writeMetrics } from '../skills/jev-browser-use/lib/telemetry.mjs';
@@ -260,4 +260,14 @@ test('DNS and network permission failures hand back once without exposing raw er
     assert.ok(!JSON.stringify(result).includes('private network'));
     assert.ok(!JSON.stringify(result).includes('private host'));
   }
+});
+
+test('runtime doctor reports credential, logging and provider checks separately', async () => {
+  mockDecisions();
+  const result = await doctor({envFile,provider:'openrouter',model:'~typesafe/jev-latest',live:true,logDirectory:join(directory,'logs')});
+  assert.equal(result.credentials,'ok'); assert.equal(result.logging,'ok'); assert.equal(result.providerConnection,'ok');
+  globalThis.fetch = async()=>{throw new TypeError('private detail',{cause:{code:'ENOTFOUND'}});};
+  const blocked = await doctor({envFile,provider:'openrouter',live:true,logDirectory:envFile});
+  assert.equal(blocked.logging,'unavailable'); assert.equal(blocked.providerConnection,'network_dns');
+  assert.ok(!JSON.stringify(blocked).includes('private detail'));
 });

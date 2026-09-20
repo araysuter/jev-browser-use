@@ -1,6 +1,6 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "jev-browser-use",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Fast browser actions with Jev and independent verification with Codex. Requires Computer Use and your Jev API configuration."
 }

@@ -21,6 +21,18 @@ var taskTab = await cua.createBrowserTab('iab', 'about:blank', {visible:false});
 
 Then navigate with the documented API. Keep work hidden normally; make the browser visible when the user asks to watch (including a watched acceptance trial). The bridge needs this CUA tab API, Node module imports, filesystem access, and fetch. It supplies no browser permissions or driver. If tools/configuration are absent, report the exact limitation and use ordinary Astra browser work when available and authorized. Do not install a different driver or invent browser controls.
 
+## Verify setup after installation or a connection failure
+
+Restart Codex and use a fresh task after setup changes sandbox permissions. Before the first real browser task, import the installed bridge and run this in `cua_repl`:
+
+```js
+var jev = await import('file://<absolute-skill-directory>/bridge.mjs');
+var jevConfig = await jev.loadConfig();
+nodeRepl.write(await jev.doctor({...jevConfig, live:true}));
+```
+
+This sends one small paid synthetic decision request; use it when setup/provider testing is authorized. It sends no browser contents. All three checks (`credentials`, `logging`, `providerConnection`) should be `ok`. The result includes the runtime version to identify stale installations. Terminal diagnostics do not prove Computer Use runtime access. If network access or log writes are unavailable, report the specific check and follow provider setup guidance; do not claim installation is fully verified. Do not rerun doctor before every navigation chunk.
+
 ## Start a bounded session
 
 Resolve this skill's absolute directory before importing. In `cua_repl`:

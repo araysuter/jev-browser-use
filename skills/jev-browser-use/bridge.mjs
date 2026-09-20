@@ -4,6 +4,8 @@ import { join } from 'node:path';
 import { availableActions, discoverActions, validateControl } from './lib/actions.mjs';
 import { HandoffError, actionKey, checkState, fingerprint, matchesName, parseState, permitted, requiresApproval, selectContext, textRoles } from './lib/state.mjs';
 import { readCredential, sanitizePayload, sensitiveField } from './lib/privacy.mjs';
+import { runtimeVersion } from './lib/version.mjs';
+export { runtimeVersion } from './lib/version.mjs';
 import { writeMetrics } from './lib/telemetry.mjs';
 export { availableActions, discoverActions } from './lib/actions.mjs';
 
@@ -307,4 +309,23 @@ export async function waitForState(tab, { allowedOrigins, includes = [], exclude
     if (remaining > 0) await new Promise(resolve => setTimeout(resolve, Math.min(pollMs, remaining)));
   }
   return { status: 'timeout', state, elapsedMs: Math.round(performance.now() - startedAt) };
+}
+
+/** Run from the actual Computer Use runtime; only synthetic data leaves the machine. */
+export async function doctor({live = false, logDirectory, ...config} = {}) {
+  const route = providers[config.provider];
+  const result = {version:runtimeVersion, credentials:'not_checked', logging:'not_checked', providerConnection:live ? 'not_checked' : 'not_tested'};
+  try {
+    if (!route) throw new HandoffError('provider_invalid');
+    await readCredential(config.envFile, route.keyName);
+    result.credentials = 'ok';
+  } catch (error) { result.credentials = errorCode(error); }
+  result.logging = await writeMetrics({status:'other',provider:config.provider,model:config.model}, {directory:logDirectory}) ? 'ok' : 'unavailable';
+  if (live && result.credentials === 'ok') {
+    try {
+      await decide({...config,goal:'Synthetic connectivity check is complete. Choose DONE.',state:'Synthetic test complete.',actions:[]});
+      result.providerConnection = 'ok';
+    } catch (error) { result.providerConnection = errorCode(error); }
+  }
+  return result;
 }

@@ -1,6 +1,6 @@
 {
   "name": "jev-browser-use",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -8,10 +8,14 @@
   },
   "scripts": {
     "test": "node --test tests/*.test.mjs",
-    "setup": "node scripts/install.mjs"
+    "setup": "node scripts/install.mjs",
+    "doctor": "node scripts/doctor.mjs",
+    "uninstall:skill": "node scripts/uninstall.mjs"
   },
   "bin": {
-    "jev-browser-use-setup": "scripts/install.mjs"
+    "jev-browser-use-setup": "scripts/install.mjs",
+    "jev-browser-use-doctor": "scripts/doctor.mjs",
+    "jev-browser-use-uninstall": "scripts/uninstall.mjs"
   },
   "files": [
     "scripts/",

@@ -39,3 +39,8 @@ test('hidden credential prompt never echoes an immediately pasted synthetic key'
   const { execFile } = await import('node:child_process');
   await promisify(execFile)('python3', ['tests/hidden-input.py'], { timeout: 15000 });
 });
+test('public CLI setup and uninstall round trip with isolated HOME', { skip: process.platform === 'win32' }, async () => {
+  const { promisify } = await import('node:util');
+  const { execFile } = await import('node:child_process');
+  await promisify(execFile)('python3', ['tests/setup-cli.py'], { timeout: 15000 });
+});

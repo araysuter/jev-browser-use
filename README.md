@@ -12,9 +12,25 @@ With Node.js 22+ and Git installed, run in an interactive terminal:
 git clone https://github.com/araysuter/jev-browser-use.git "$HOME/.jev-browser-use" && node "$HOME/.jev-browser-use/scripts/install.mjs"
 ```
 
-Choose a provider and create a private local credential file using hidden input, or select an existing one. Keys and settings stay outside the repo. Existing configuration is preserved. See [installation](INSTALL.md) for plugin setup, updates and prerelease branches. The command becomes available on the default branch when this version is merged.
+Paste your API key at the hidden prompt, or press Enter to use an existing credentials file. Existing keys/settings are preserved. Then answer **y** if you want setup to configure Codex's required network and log-directory access. The prompt explains that network access applies to workspace-write tasks generally, not just Jev. Setup preserves the sandbox mode and approval policy.
 
-Start a fresh Codex task. The skill is intended as the preferred route for suitable browser navigation; installation does not forcibly intercept every action. Computer Use must already be available.
+**Restart Codex and start a fresh task**, then ask it to use `$jev-browser-use` to run the live doctor check and test navigation on example.com. A successful install alone does not establish browser-runtime connectivity. The live check makes one small paid synthetic API request. See [installation and troubleshooting](INSTALL.md) for details.
+
+### Update
+
+```sh
+git -C "$HOME/.jev-browser-use" pull --ff-only && node "$HOME/.jev-browser-use/scripts/install.mjs"
+```
+
+### Uninstall
+
+```sh
+git -C "$HOME/.jev-browser-use" pull --ff-only && node "$HOME/.jev-browser-use/scripts/uninstall.mjs"
+```
+
+Removes the standalone skill and restores setup-managed permissions if Codex config has not changed since setup. Preserves API keys, settings, logs, source checkout, and later user configuration edits. Reinstall with `node "$HOME/.jev-browser-use/scripts/install.mjs"`, then restart Codex. Native marketplace plugins must be removed through Codex plugin management.
+
+The skill is the preferred route for suitable navigation when available; it does not forcibly intercept browser actions. Computer Use must already be installed.
 
 ## Workflow
 

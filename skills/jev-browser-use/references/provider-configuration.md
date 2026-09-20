@@ -38,3 +38,13 @@ Credentials are plaintext local files, not an encrypted vault. The key is used o
 - Default context cap is 28,000 UTF-8 request bytes including instructions, choices and history, conservatively below the current 32K context window; no character/4 token assumption is made. If the task cannot fit, return to Astra. Model-specific token counts come from the provider when present.
 
 References: [TypeSafe](https://docs.typesafe.ai/introduction), [OpenRouter Jev](https://openrouter.ai/~typesafe/jev-latest).
+
+## Setup permissions and diagnostics
+
+The interactive installer offers an explicit opt-in to update `~/.codex/config.toml`: enable `[sandbox_workspace_write].network_access` and add the private Jev log directory to `writable_roots`. This affects workspace-write tasks generally, not just this skill or a single provider domain. It keeps the sandbox mode and approval policy unchanged. The installer preserves other settings and stores a private rollback snapshot. Unsupported TOML layouts require manual configuration rather than a guessed rewrite.
+
+Restart Codex and verify in a fresh Computer Use runtime with `doctor({...await loadConfig(), live:true})`. Managed policies, profiles, or app overrides may supersede config.toml. If access remains blocked, inspect that task's effective permissions; do not assume the wizard can override host policy. `logging: unavailable` means logs could not be written, not that no browser work occurred.
+
+Terminal-only diagnostics: `node scripts/doctor.mjs`; add `--live` for one small paid synthetic provider check. Do not run that check automatically during installation. Logs include runtime version and an allowlisted failure category, never raw errors.
+
+`node scripts/uninstall.mjs` removes the standalone skill and restores setup-managed Codex settings only if the config has not changed since setup. It keeps credentials, logs and the source checkout. If config changed, it leaves it untouched and reports the need for manual review. See the root INSTALL.md for complete commands and native-plugin differences.

@@ -5,6 +5,7 @@ import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createInterface } from 'node:readline/promises';
 import { Writable } from 'node:stream';
+import { configurePermissions } from './permissions.mjs';
 import { readCredential } from '../skills/jev-browser-use/lib/privacy.mjs';
 
 const sourceRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -101,7 +102,17 @@ async function main() {
     config = { provider, model, envFile };
   }
   const result = await install({ config, configureOnly: args.includes('--configure-only') });
-  console.log(`${result.installed ? 'Skill installed.' : 'Plugin files unchanged.'} ${result.configured ? 'Local configuration present; provider connectivity has not been tested.' : 'Provider configuration pending; run setup interactively later.'} Start a fresh Codex task. Computer Use must already be available.`);
+  if (!args.includes('--no-config')) {
+    if (!process.stdin.isTTY || !process.stdout.isTTY) throw new Error('Use an interactive terminal for permission setup');
+    console.log('Jev needs outbound requests from the Codex sandbox and write access to its private log directory.');
+    console.log('This enables network access for workspace-write tasks generally, not only Jev or OpenRouter. Filesystem sandboxing and approvals remain enabled. Existing settings are backed up for uninstall.');
+    const allow = await ask('Configure these Codex permissions? [y/N]: ');
+    if (/^(y|yes)$/i.test(allow)) {
+      try { console.log(`Codex permissions: ${(await configurePermissions()).status}.`); }
+      catch { console.log('Permission configuration could not finish automatically. Follow INSTALL.md; no broader sandbox mode was enabled.'); process.exitCode = 1; }
+    } else console.log('Permissions unchanged. Jev may remain blocked; see INSTALL.md.');
+  }
+  console.log(`${result.installed ? 'Skill installed.' : 'Plugin files unchanged.'} ${result.configured ? 'Local configuration present; provider connectivity has not been tested.' : 'Provider configuration pending; run setup interactively later.'} Restart Codex, start a fresh task, and ask it to run Jev doctor in the browser runtime. Configuration is not proof of runtime access. Computer Use must already be available.`);
 }
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   main().catch(() => {
