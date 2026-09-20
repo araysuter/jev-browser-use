@@ -70,7 +70,7 @@ async function ask(question) {
 export async function readHiddenCredential() {
   const silent = new Writable({ write(_chunk, _encoding, done) { done(); } });
   const prompts = createInterface({ input: process.stdin, output: silent, terminal: true });
-  process.stdout.write('Paste API key (hidden; stored locally, never tested automatically): ');
+  process.stdout.write('Paste API key, or press Enter to use an existing credentials file (hidden; stored locally, never tested automatically): ');
   try { return (await prompts.question('')).trim(); }
   finally { prompts.close(); process.stdout.write('\n'); }
 }
@@ -88,14 +88,16 @@ async function main() {
     const provider = (await ask('Provider [openrouter / typesafe] (default openrouter): ')) || 'openrouter';
     if (!Object.hasOwn(models, provider)) throw new Error('Choose openrouter or typesafe');
     const model = (await ask(`Model [${models[provider]}]: `)) || models[provider];
-    const mode = (await ask('Credential [new / existing] (default new): ')) || 'new';
+    const apiKey = await readHiddenCredential();
+    const path = join(homedir(), '.config', 'jev-browser-use', `${provider}.env`);
     let envFile;
-    if (mode === 'existing') envFile = await ask('Absolute path to your private dotenv file: ');
-    else if (mode === 'new') {
-      const path = join(homedir(), '.config', 'jev-browser-use', `${provider}.env`);
-      if (await exists(path)) throw new Error('Credential file already exists; rerun and choose existing');
-      envFile = await createCredentialFile({ provider, apiKey: await readHiddenCredential() });
-    } else throw new Error('Choose new or existing');
+    if (apiKey) {
+      if (await exists(path)) throw new Error('Credential file already exists; rerun and press Enter to use it');
+      envFile = await createCredentialFile({ provider, apiKey });
+    } else {
+      const defaultPath = await exists(path) ? path : '';
+      envFile = (await ask(`Absolute path to your private dotenv file${defaultPath ? ` [${defaultPath}]` : ''}: `)) || defaultPath;
+    }
     config = { provider, model, envFile };
   }
   const result = await install({ config, configureOnly: args.includes('--configure-only') });

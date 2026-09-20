@@ -10,7 +10,7 @@ Run this yourself in an interactive terminal:
 git clone https://github.com/araysuter/jev-browser-use.git jev-browser-use && node jev-browser-use/scripts/install.mjs
 ```
 
-The wizard installs the standalone skill, asks which provider/model to use, and offers to create a local credentials file with hidden key entry or reuse an existing file. OpenRouter is the default; TypeSafe is equally supported. No key is passed on the command line or sent in chat. There are no runtime npm dependencies.
+The wizard installs the standalone skill, asks which provider/model to use, then asks you to paste your API key with hidden input. Press Enter without a key to choose an existing credentials file; its default path is offered if that file already exists. OpenRouter is the default; TypeSafe is equally supported. No key is passed on the command line or sent in chat. There are no runtime npm dependencies.
 
 This command clones the default branch into a new `jev-browser-use` directory and starts the wizard. Run it from a parent directory where that folder does not already exist; if you already cloned the repo, run `node scripts/install.mjs` from that checkout instead. For a reviewed prerelease, add `--branch branch-name` to `git clone`. Do not represent an unmerged branch as a released default-branch install.
 
