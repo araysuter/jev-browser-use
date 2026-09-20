@@ -245,3 +245,19 @@ test('credential checks and telemetry work without a global process binding', as
     await assert.rejects(readCredential(envFile, 'OPENROUTER_API_KEY'), /credential_permissions/);
   } finally { globalThis.process = original; }
 });
+
+test('DNS and network permission failures hand back once without exposing raw errors', async () => {
+  for (const [code, expected] of [['ENOTFOUND','network_dns'],['EAI_AGAIN','network_dns'],['EACCES','network_denied'],['EPERM','network_denied']]) {
+    let calls = 0;
+    globalThis.fetch = async () => {
+      calls++;
+      throw new TypeError('private network details', { cause: Object.assign(new Error('private host'), {code}) });
+    };
+    const result = await run(tab(page('1 button Settings')), opts());
+    assert.equal(result.handoff, expected);
+    assert.equal(calls, 1);
+    assert.equal(result.metrics.decisionRetries, 0);
+    assert.ok(!JSON.stringify(result).includes('private network'));
+    assert.ok(!JSON.stringify(result).includes('private host'));
+  }
+});

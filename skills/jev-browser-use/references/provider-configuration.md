@@ -32,6 +32,7 @@ Credentials are plaintext local files, not an encrypted vault. The key is used o
 - Missing configuration: rerun the wizard. Never search unrelated files for keys.
 - Existing configuration: setup preserves it. Deliberate provider changes should edit the three non-secret settings, with the user's authorization.
 - Authentication/quota/permissions/schema failures: stop and report the category; do not blindly retry or switch providers.
+- DNS/network access: `network_dns` means hostname resolution failed; `network_denied` means the runtime reported a permission denial. These return immediately without retrying. The selected provider must be reachable from the Computer Use Node runtime itself. A successful connection from a terminal does not prove this. Check supported host network settings or contact the host support team; reinstalling the skill or changing keys does not grant network access. Do not bypass restrictions with another process or disable TLS verification.
 - Transport failures: at most one retry by default, within the chunk budget.
 - First connection test: use a synthetic goal and browser state, not a private authenticated page. State clearly that it is a live paid API request when arranging the test.
 - Default context cap is 28,000 UTF-8 request bytes including instructions, choices and history, conservatively below the current 32K context window; no character/4 token assumption is made. If the task cannot fit, return to Astra. Model-specific token counts come from the provider when present.
