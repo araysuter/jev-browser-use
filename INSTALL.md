@@ -7,12 +7,12 @@ Requirements: Node.js 22+, Git, Codex with Computer Use and a reachable Chrome o
 Run this yourself in an interactive terminal:
 
 ```sh
-git clone https://github.com/araysuter/jev-browser-use.git jev-browser-use && node jev-browser-use/scripts/install.mjs
+git clone https://github.com/araysuter/jev-browser-use.git "$HOME/.jev-browser-use" && node "$HOME/.jev-browser-use/scripts/install.mjs"
 ```
 
 The wizard installs the standalone skill, asks which provider/model to use, then asks you to paste your API key with hidden input. Press Enter without a key to choose an existing credentials file; its default path is offered if that file already exists. OpenRouter is the default; TypeSafe is equally supported. No key is passed on the command line or sent in chat. There are no runtime npm dependencies.
 
-This command clones the default branch into a new `jev-browser-use` directory and starts the wizard. Run it from a parent directory where that folder does not already exist; if you already cloned the repo, run `node scripts/install.mjs` from that checkout instead. For a reviewed prerelease, add `--branch branch-name` to `git clone`. Do not represent an unmerged branch as a released default-branch install.
+This command keeps the source checkout in the hidden `~/.jev-browser-use` directory, regardless of your current directory, and starts the wizard. If that directory already exists, use the update commands below. The installed skill lives separately in `~/.agents/skills/jev-browser-use`; that installed folder is not a Git repository. For a reviewed prerelease, add `--branch branch-name` to `git clone`. Do not represent an unmerged branch as a released default-branch install.
 
 An optional npx entry point is also packaged: `npx --yes --package=github:araysuter/jev-browser-use jev-browser-use-setup`. Some npm installations prohibit Git and remote packages. Use the clone-and-run command above rather than weakening those settings.
 
@@ -23,8 +23,8 @@ Start a fresh Codex task afterward. If the skill is not discovered, restart Code
 ## From a local checkout
 
 ```sh
-git clone https://github.com/araysuter/jev-browser-use.git
-cd jev-browser-use
+git clone https://github.com/araysuter/jev-browser-use.git "$HOME/.jev-browser-use"
+cd "$HOME/.jev-browser-use"
 node scripts/install.mjs
 ```
 
@@ -37,14 +37,20 @@ Use one route, not duplicate plugin and standalone installations:
 ```sh
 codex plugin marketplace add araysuter/jev-browser-use
 codex plugin add jev-browser-use@jev-browser-use
-node jev-browser-use/scripts/install.mjs --configure-only
+node "$HOME/.jev-browser-use/scripts/install.mjs" --configure-only
 ```
 
-Check `codex plugin --help` first because availability depends on the Codex version. Restart Codex after plugin installation. For the final command, first clone this repository into `jev-browser-use` if needed. It only configures credentials; it does not install another skill. If the CLI does not support plugins, use the standalone route.
+Check `codex plugin --help` first because availability depends on the Codex version. Restart Codex after plugin installation. For the final command, first clone this repository into `~/.jev-browser-use` using the command above if needed. It only configures credentials; it does not install another skill. If the CLI does not support plugins, use the standalone route.
 
 ## Updates and verification
 
-Update your existing checkout to the intended reviewed version, then rerun `node scripts/install.mjs` to update runtime files while preserving settings. Do not clone over an existing directory. The runtime consists of `SKILL.md`, `bridge.mjs`, `lib/`, `references/`, `agents/`, and `LICENSE`; copying only the bridge is insufficient.
+Update the hidden source checkout and reinstall while preserving your saved settings and credentials:
+
+```sh
+git -C "$HOME/.jev-browser-use" pull --ff-only && node "$HOME/.jev-browser-use/scripts/install.mjs"
+```
+
+Run Git commands against this source checkout, not the installed skill folder. Do not clone over an existing directory. The runtime consists of `SKILL.md`, `bridge.mjs`, `lib/`, `references/`, `agents/`, and `LICENSE`; copying only the bridge is insufficient.
 
 Report installation, configuration, provider connectivity, and live browser validation separately. Before sending authenticated page text to a provider, follow the task's data-authorization rules. Secret filtering is heuristic, not a guarantee.
 
