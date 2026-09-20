@@ -1,0 +1,5 @@
+interface:
+  display_name: "Jev Browser Use"
+  short_description: "Jev navigates; Astra writes, reviews, and verifies"
+policy:
+  allow_implicit_invocation: true

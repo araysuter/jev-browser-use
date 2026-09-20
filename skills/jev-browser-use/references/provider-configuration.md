@@ -1,55 +1,39 @@
-# Jev provider configuration
+# Provider setup
 
-Read this when installing the skill, changing providers or credentials, or diagnosing API integration failures. Normal browser tasks call `loadConfig()` and do not choose or switch providers themselves.
+Both TypeSafe and OpenRouter are supported. No automatic provider fallback occurs.
 
-The installer chooses a supported adapter. The skill does not prefer one provider over another and never falls back automatically.
+From a checkout, run `node scripts/install.mjs` in an interactive terminal. The wizard offers provider/model selection, creating a private local credential file with hidden input, or reusing an existing private dotenv file. Existing configuration and keys are never overwritten. Use `--configure-only` if a plugin is already installed, to avoid a duplicate standalone skill. Use `--no-config` to install runtime files before a key is available.
 
-## Configuration file
+The public clone-and-run command is documented in the repository's INSTALL.md; an optional npx entry point is available where npm permits Git packages. Never request a key in chat, pass it as a command-line argument, or display a dotenv file.
 
-Create `~/.config/jev-browser-use/config.json`. It contains only:
+## Existing format (unchanged)
 
-- `envFile`: absolute path to a local dotenv file holding the selected provider credential.
-- `provider`: a supported adapter ID.
-- `model`: the Jev model identifier accepted by that adapter.
-
-Credentials must remain in the referenced dotenv file and must never be copied into `config.json`, the Skill directory, browser pages, logs, or traces.
-
-## Supported adapters
-
-### Official TypeSafe endpoint
+`~/.config/jev-browser-use/config.json` stores only:
 
 ```json
 {
-  "envFile": "/absolute/path/to/your/credentials.env",
-  "provider": "typesafe",
-  "model": "jev-latest"
-}
-```
-
-The adapter reads `TYPESAFE_API_KEY` and uses the fixed TypeSafe SystemOne endpoint.
-
-### OpenRouter Decisions endpoint
-
-```json
-{
-  "envFile": "/absolute/path/to/your/credentials.env",
   "provider": "openrouter",
-  "model": "~typesafe/jev-latest"
+  "model": "~typesafe/jev-latest",
+  "envFile": "/absolute/path/to/private/credentials.env"
 }
 ```
 
-The adapter reads `OPENROUTER_API_KEY` (lowercase `openrouter_api_key` is also accepted) and uses OpenRouter's Decisions endpoint. The leading `~` requests the latest compatible Jev release.
+| Provider | Default model | Credential variable | Endpoint |
+|---|---|---|---|
+| OpenRouter | `~typesafe/jev-latest` | `OPENROUTER_API_KEY` | `https://openrouter.ai/api/alpha/decisions` |
+| TypeSafe | `jev-latest` | `TYPESAFE_API_KEY` | `https://api.typesafe.ai/v1/systemone` |
 
-## Shared behavior
+New files are created at `~/.config/jev-browser-use/openrouter.env` or `typesafe.env`. On POSIX systems credential files must be regular, owned by the current user, not symlinks, and inaccessible to group/other users (mode 0600 or stricter). Configuration directories are mode 0700. Existing shared files are rejected with `credential_permissions`; the user can intentionally restrict their file or create a separate private credential file. Windows users should use an account-private directory; POSIX mode checks do not provide Windows ACL enforcement.
 
-- Both adapters use Bearer authentication, reject redirects, validate the returned choice schema, confidence, probabilities, and model identity, and keep credentials out of the decision body.
-- A transport failure may be retried once within the same bounded run using the same adapter and model. Authentication, schema, and quota failures are not retried.
-- Missing credentials are configuration errors. Do not search unrelated files or silently switch adapters.
-- Browser tasks should spread `loadConfig()` into `createSession()` or `run()` unchanged. Provider changes belong to installation or maintenance, not task execution.
+Credentials are plaintext local files, not an encrypted vault. The key is used only in the provider authorization header and is removed from model input if encountered. Provider replies are validated; raw error bodies are never returned. Configuration presence does not prove connectivity or API access.
 
-## References
+## Troubleshooting
 
-- [TypeSafe documentation](https://docs.typesafe.ai/introduction)
-- [OpenRouter Jev latest](https://openrouter.ai/~typesafe/jev-latest)
-- [OpenRouter Decisions schema](https://openrouter.ai/openapi.json)
-- [Browser Use Jev example](https://github.com/browser-use/jev-ultrafast)
+- Missing configuration: rerun the wizard. Never search unrelated files for keys.
+- Existing configuration: setup preserves it. Deliberate provider changes should edit the three non-secret settings, with the user's authorization.
+- Authentication/quota/permissions/schema failures: stop and report the category; do not blindly retry or switch providers.
+- Transport failures: at most one retry by default, within the chunk budget.
+- First connection test: use a synthetic goal and browser state, not a private authenticated page. State clearly that it is a live paid API request when arranging the test.
+- Default context cap is 28,000 UTF-8 request bytes including instructions, choices and history, conservatively below the current 32K context window; no character/4 token assumption is made. If the task cannot fit, return to Astra. Model-specific token counts come from the provider when present.
+
+References: [TypeSafe](https://docs.typesafe.ai/introduction), [OpenRouter Jev](https://openrouter.ai/~typesafe/jev-latest).
