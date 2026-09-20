@@ -9,7 +9,7 @@ This fork of [wy-coliney/jev-browser-use](https://github.com/wy-coliney/jev-brow
 With Node.js 22+ and Git installed, run in an interactive terminal:
 
 ```sh
-npx --yes --package=github:araysuter/jev-browser-use jev-browser-use-setup
+git clone https://github.com/araysuter/jev-browser-use.git jev-browser-use && node jev-browser-use/scripts/install.mjs
 ```
 
 Choose a provider and create a private local credential file using hidden input, or select an existing one. Keys and settings stay outside the repo. Existing configuration is preserved. See [installation](INSTALL.md) for plugin setup, updates and prerelease branches. The command becomes available on the default branch when this version is merged.

@@ -4,7 +4,7 @@ Both TypeSafe and OpenRouter are supported. No automatic provider fallback occur
 
 From a checkout, run `node scripts/install.mjs` in an interactive terminal. The wizard offers provider/model selection, creating a private local credential file with hidden input, or reusing an existing private dotenv file. Existing configuration and keys are never overwritten. Use `--configure-only` if a plugin is already installed, to avoid a duplicate standalone skill. Use `--no-config` to install runtime files before a key is available.
 
-The public command is documented in the repository's INSTALL.md. Never request a key in chat, pass it as a command-line argument, or display a dotenv file.
+The public clone-and-run command is documented in the repository's INSTALL.md; an optional npx entry point is available where npm permits Git packages. Never request a key in chat, pass it as a command-line argument, or display a dotenv file.
 
 ## Existing format (unchanged)
 
