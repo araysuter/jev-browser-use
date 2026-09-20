@@ -1,47 +1,49 @@
-# Agent installation
+# Install and configure
 
-Follow these steps when the user asks to install or update Jev Browser Use for Codex.
+Requirements: Node.js 22+, Git, Codex with Computer Use and a reachable Chrome or in-app browser, and an OpenRouter or TypeSafe API key.
 
-If the user requests a Codex plugin or marketplace installation, use:
+## One-command guided setup
+
+Run this yourself in an interactive terminal:
 
 ```sh
-codex plugin marketplace add wy-coliney/jev-browser-use
+npx --yes --package=github:araysuter/jev-browser-use jev-browser-use-setup
+```
+
+The wizard installs the standalone skill, asks which provider/model to use, and offers to create a local credentials file with hidden key entry or reuse an existing file. OpenRouter is the default; TypeSafe is equally supported. No key is passed on the command line or sent in chat. There are no runtime npm dependencies.
+
+This command uses the repository's default branch. For a reviewed prerelease branch, append `#branch-name` to the GitHub package specification. Do not represent an unmerged branch as a released default-branch install.
+
+New credentials are stored outside the repository at `~/.config/jev-browser-use/openrouter.env` or `typesafe.env`, with user-only POSIX permissions. Existing credentials and configuration are never overwritten. The file is plaintext, not an encrypted vault. Setup performs no paid API calls and no live browser task.
+
+Start a fresh Codex task afterward. If the skill is not discovered, restart Codex or explicitly invoke `$jev-browser-use`. Installation does not intercept browser actions or install Computer Use.
+
+## From a local checkout
+
+```sh
+git clone https://github.com/araysuter/jev-browser-use.git
+cd jev-browser-use
+node scripts/install.mjs
+```
+
+`node scripts/install.mjs --no-config` installs without credentials or prompts. Later, run the command without that flag to complete setup. `--help` lists options.
+
+## Native plugin alternative
+
+Use one route, not duplicate plugin and standalone installations:
+
+```sh
+codex plugin marketplace add araysuter/jev-browser-use
 codex plugin add jev-browser-use@jev-browser-use
+npx --yes --package=github:araysuter/jev-browser-use jev-browser-use-setup --configure-only
 ```
 
-Check `codex plugin --help` first. For older clients without that command, use the npx route below. Choose one installation route, preserve existing Jev configuration, and restart Codex after plugin installation. Do not also install a duplicate standalone Skill.
+Check `codex plugin --help` first because availability depends on the Codex version. Restart Codex after plugin installation. The final command only configures credentials; it does not install another skill. If the CLI does not support plugins, use the standalone route.
 
-For the standard Skill installer, use:
+## Updates and verification
 
-```sh
-npx skills add wy-coliney/jev-browser-use --skill jev-browser-use -g -a codex -y
-```
+Rerun the same setup command to update runtime files while preserving settings. The runtime consists of `SKILL.md`, `bridge.mjs`, `lib/`, `references/`, `agents/`, and `LICENSE`; copying only the bridge is insufficient.
 
-Use `-a claude-code` only when the user requests Claude Code. Installation is supported, but Claude browser execution is not yet integrated. Omit `-g` for a requested project-local installation. Then help configure the provider using the [configuration guide](skills/jev-browser-use/references/provider-configuration.md), preserving any existing settings. This CLI installs files, not API credentials or browser permissions.
+Report installation, configuration, provider connectivity, and live browser validation separately. Before sending authenticated page text to a provider, follow the task's data-authorization rules. Secret filtering is heuristic, not a guarantee.
 
-For manual installation and guided API setup:
-
-1. Check Node.js 22+ and Git are available.
-2. Clone `https://github.com/wy-coliney/jev-browser-use.git` into a new temporary directory.
-3. From that checkout, run `node scripts/install.mjs --no-config`. This installs to `~/.agents/skills/jev-browser-use` without interactive prompts or changing existing settings.
-4. If `~/.config/jev-browser-use/config.json` already exists, preserve it. Otherwise, ask which provider the user wants (`typesafe` or `openrouter`) and the absolute path to their local credential dotenv file. Never ask for a key in chat or print the file.
-5. Configure using the installer's exported function, run from the checkout with `node --input-type=module`:
-
-```js
-import { install } from './scripts/install.mjs';
-await install({
-  config: {
-    provider: 'typesafe',
-    model: 'jev-latest',
-    envFile: '/absolute/path/to/existing/credentials.env',
-  },
-});
-```
-
-Use the user's chosen settings; OpenRouter's default model is `~typesafe/jev-latest`. Pass paths safely, not as unescaped shell substitutions. See [provider configuration](skills/jev-browser-use/references/provider-configuration.md) for credential variable names. If API access is not ready, finish installing and report configuration as pending.
-
-Confirm the installed `SKILL.md` and `bridge.mjs` match `skills/jev-browser-use/` in the checkout, then remove only the temporary directory you created. Report installation and configuration status separately; no paid API test is needed.
-
-The user needs Computer Use MCP and Chrome or Codex's in-app browser. This installer does not set up the browser plugin. Start a new Codex task after installation; restart Codex if the Skill is not discovered. For browser capability checks, follow the installed Skill's direct `mcp__cua_repl` probe.
-
-Preserve existing settings and credentials. Do not change global agent instructions or run live browser tasks as part of installation.
+See [provider configuration](skills/jev-browser-use/references/provider-configuration.md) for the unchanged configuration schema and troubleshooting. For development, `npm test` exercises synthetic browser and provider fixtures without real keys or cloud changes.

@@ -1,0 +1,25 @@
+{
+  "name": "jev-browser-use",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "setup": "node scripts/install.mjs"
+  },
+  "bin": {
+    "jev-browser-use-setup": "scripts/install.mjs"
+  },
+  "files": [
+    "scripts/",
+    "skills/",
+    "plugin.json",
+    "LICENSE",
+    "README.md",
+    "INSTALL.md",
+    ".agents/plugins/marketplace.json"
+  ]
+}
